@@ -335,9 +335,14 @@ function parseHunkBody(lines: string[], j: number, a: number): [Hunk, number] {
     }
     break;
   }
+  // Empty lines at the end of a body are not part of it -- but only lines
+  // after which no body line follows. A `\` line is a body line, so an empty
+  // context line a `\` line followed (noNL) is still in the body: it stays
+  // in O, and the `\` still counts as following the hunk's last context
+  // or `+` line for the final line break (section 6).
   while (items.length > 0) {
     const last = items[items.length - 1]!;
-    if (last.kind === 'ctx' && last.text === '') items.pop();
+    if (last.kind === 'ctx' && last.text === '' && !last.noNL) items.pop();
     else break;
   }
   return [{ a, items }, k];
